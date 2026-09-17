@@ -58,7 +58,7 @@ export default async function handler(req, res) {
       res.setHeader('Set-Cookie', `mp_session=; ${cookieFlags}; Max-Age=0`);
       return send(200, { ok: true });
     }
-    if (!storageReady()) throw new AppError(503, 'Connect a private Vercel Blob store to this project, then redeploy. No Vercel deployment API token is needed.');
+    if (!storageReady()) throw new AppError(503, 'Connect Neon (Free plan) to this project in Vercel Storage, then redeploy. Keep the default DATABASE_URL variable name. Your upload table is created automatically.');
     if (action === 'publish' && req.method === 'POST') {
       const body = await bodyOf(req);
       return send(201, await saveMockup(body));
@@ -72,6 +72,6 @@ export default async function handler(req, res) {
   } catch (error) {
     const status = error instanceof SyntaxError ? 400 : error.status || 500;
     if (status === 500) console.error('Mockup storage operation failed:', error.name);
-    send(status, { error: status === 500 ? 'Storage could not complete the request. Check the Blob connection and free usage limits, then try again.' : error instanceof SyntaxError ? 'Invalid JSON request.' : error.message });
+    send(status, { error: status === 500 ? 'The database is temporarily unavailable. Check the Neon connection and free usage limits, then try again.' : error instanceof SyntaxError ? 'Invalid JSON request.' : error.message });
   }
 }

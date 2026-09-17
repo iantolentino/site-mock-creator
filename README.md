@@ -4,7 +4,7 @@ Upload a personal HTML mockup and receive a public link on this single website:
 
 `https://your-site.vercel.app/view/asset-inventory-test-mockup`
 
-Enter `asset-inventory` (or `asset-inventory-test-mockup`): the app consistently adds one `-test-mockup` suffix. There is **no Vercel deployment API token**, no project creation per upload, and no rebuild per mockup. Uploaded files are stored in Vercel Blob.
+Enter `asset-inventory` (or `asset-inventory-test-mockup`): the app consistently adds one `-test-mockup` suffix. Uploaded HTML is stored in **Neon PostgreSQL**. No Blob store, deployment API token, or rebuild per upload is needed. The app creates its database table automatically.
 
 ## Deploy on Vercel Hobby
 
@@ -16,9 +16,13 @@ Enter `asset-inventory` (or `asset-inventory-test-mockup`): the app consistently
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-4. In the Vercel project's **Storage** tab, create a **Blob** store with **Private** access and connect it to the project. Use a dedicated store for this app. Vercel supplies the storage connection through `BLOB_STORE_ID` and OIDC credentials, or `BLOB_READ_WRITE_TOKEN`; the app supports both. You do not need `VERCEL_TOKEN` or `VERCEL_TEAM_ID`.
+4. In the Vercel project's **Storage** tab, choose **Neon**, select its **Free** plan, and connect it to this project for **Production**. Keep the default environment variable prefix so the integration supplies `DATABASE_URL` automatically. The app also recognizes `POSTGRES_URL`, `DATABASE_URL_UNPOOLED` and `POSTGRES_URL_NON_POOLING`. Use a dedicated database for this app. No connection string needs to be pasted manually when the integration is connected correctly.
 5. Deploy/redeploy after configuring storage and variables. Open the website, sign in, choose a name and HTML file, then click **Publish mockup**.
-6. Open the generated link in an incognito window. Confirm it renders and that updates appear at the same address. This final live check requires your actual Vercel account and Blob store.
+6. Open the generated link in an incognito window. Confirm it renders and that updates appear at the same address. This final live check requires your actual Vercel account and Neon connection.
+
+**That is the whole setup.** No SQL editor, schema command, migration command, or manual table creation is needed. After sign-in, opening your collection creates `public.mockup_studio_pages` if it does not exist. Existing rows are preserved. Subsequent uploads only save HTML and return a link.
+
+If you deployed the previous Blob version: connect Neon, keep your existing `ADMIN_PASSWORD` and `SESSION_SECRET`, and redeploy the latest `main` commit. Old Blob objects are left untouched and are not imported automatically; re-upload any HTML you want served by this version, using the same names to keep the public paths.
 
 Use the production website when publishing links. Links copied from localhost or a protected preview deployment will not be publicly accessible. If production has Vercel Authentication enabled, disable it for the production site so visitors can open mockup links; the uploader itself remains password protected.
 
@@ -26,17 +30,17 @@ Use the production website when publishing links. Links copied from localhost or
 
 - Upload one UTF-8 `.html` or `.htm` file, up to 2 MB. CSS and JavaScript should be inline; images/fonts must be embedded or use public URLs. Separate relative files are not uploaded. PHP/backends are not supported.
 - Names use 1–80 letters, numbers or single hyphens, followed by `-test-mockup`. Names only need to be unique inside your own uploader, not globally across Vercel.
-- Files are saved at `mockup-studio/<name>-test-mockup.html` in private Blob storage. The public `/view/<name>-test-mockup` route reads the HTML and displays it in the browser.
-- The file is not private to viewers: **anyone with the public link can view it**. Private Blob storage prevents the raw object from being served outside the app's security headers.
+- Each database row contains the mockup name, full HTML, and creation/update timestamps. The public `/view/<name>-test-mockup` route reads the HTML and displays it in the browser.
+- **Anyone with the public link can view it.** Database credentials stay server-side; the viewer applies isolation headers to uploaded HTML.
 - Click **Update**, select a new HTML file, and publish to replace that mockup while preserving its address. Without the update checkbox, duplicate names are rejected atomically by storage.
-- The collection lists stored mockups across browsers. There is no database or browser-local storage requirement, and files survive app redeployments.
-- No expiration is set. Access still depends on keeping the website/store, your Vercel account, and available free quotas. Keep your original HTML files as backups.
+- The collection lists saved mockups alphabetically across browsers, with pagination. HTML content is not loaded with the collection. Files survive app redeployments.
+- No expiration is set. Access still depends on keeping the website/database, your accounts, and available free quotas. Keep your original HTML files as backups.
 
 ## Free allowance
 
-Vercel Blob is free within Hobby limits. As checked September 17, 2026, the included allowance is 1 GB storage, 10 GB Blob transfer, 10,000 simple operations and 2,000 advanced operations. Uploads and list requests consume operations; views also consume function/transfer resources. Hobby pauses Blob access if limits are exceeded rather than charging overages. Deploy and connect the store under Hobby, not Pro. This app does not change your billing plan.
+Choose **Vercel Hobby** for hosting and **Neon Free** for the database. Both have usage limits; this app does not enable a paid plan or change billing settings. Each uploaded HTML document counts toward database storage, including embedded images. Views consume database compute and Vercel function/transfer usage. A sleeping Neon database may take longer on the first request. Check your account dashboards for current quotas.
 
-[Vercel Blob pricing](https://vercel.com/docs/vercel-blob/usage-and-pricing) · [Private storage setup](https://vercel.com/docs/vercel-blob/private-storage)
+[Neon pricing](https://neon.com/pricing) · [Neon integration in Vercel](https://vercel.com/marketplace/neon/neon)
 
 ## Local preview
 
@@ -47,7 +51,7 @@ npm run dev
 # Open http://127.0.0.1:3040
 ```
 
-The example config sets `LOCAL_STORAGE_DIR=.local/mockups`, so local uploads work without any cloud account. Local files are ignored by Git and not copied to Vercel. `LOCAL_STORAGE_DIR` is always ignored in Vercel production: cloud deployments require durable Blob storage. Upload your desired HTML again on the live site after deployment.
+The example config sets `LOCAL_STORAGE_DIR=.local/mockups`, so local uploads work without any cloud account. Local files are ignored by Git and not copied to Vercel. `LOCAL_STORAGE_DIR` is always ignored in Vercel production: cloud deployments use Neon. Upload your desired HTML again on the live site after deployment. To use Neon locally instead, remove `LOCAL_STORAGE_DIR` and set `DATABASE_URL` in the ignored `.env.local` file.
 
 ## Security and compatibility
 
@@ -55,10 +59,10 @@ The uploader requires a signed eight-hour HttpOnly session, with SameSite=Strict
 
 Uploaded HTML is served with a browser sandbox policy and an opaque origin. Inline JavaScript, styles, and public assets can work, but uploaded scripts cannot read the uploader's cookies or browser storage. Frames, service workers, form submissions and same-origin access are blocked. Mockups that depend on localStorage, cookies, relative files, or authenticated APIs need changes to work in this sandbox. No HTML sanitization claim is made; scripts still execute in the isolated document.
 
-The viewer bypasses Blob caches for current content and sends no-store. This makes same-link updates visible immediately but uses more read operations than a cached site. No automatic deletions occur. You can remove unwanted objects from Vercel Storage manually.
+The viewer reads current HTML from the database and sends no-store, so same-link updates are visible immediately. All values use parameterized SQL. Duplicate names are protected by a primary key; replacement is an atomic upsert. Automatic schema creation uses a transaction-scoped advisory lock so cold server instances can initialize safely. The database role needs permission to create the app table. No automatic deletions or resets occur.
 
 ## Verification
 
-`npm test` covers naming, size/type validation, session security, real local uploads, duplicate protection, updates, listing, anonymous viewing, missing files, traversal rejection, and production's refusal to use local storage.
+`npm test` covers naming, size/type validation, session security, real local uploads, duplicate protection, updates, listing, anonymous viewing, missing files, traversal rejection, and production's refusal to use local storage. PostgreSQL tests run the actual application SQL in PGlite, including automatic schema creation, UTF-8 storage, duplicate conflicts, updates, pagination, SQL-like HTML, database size constraints, and reuse after initialization. PGlite is a development-only test dependency.
 
-Optional browser suite: install Playwright separately or point `PLAYWRIGHT_MODULE` at an existing installation, then run `node tests/browser.cjs`. Set `BROWSER_PATH` to an installed Chromium/Edge executable if needed. The suite starts an isolated local server, uses real local files, verifies uploaded JavaScript works, verifies sandbox isolation, and checks desktop/mobile layouts. Evidence is saved under ignored `.local/qa/`. Cloud Blob writes are not exercised by local tests.
+Optional browser suite: install Playwright separately or point `PLAYWRIGHT_MODULE` at an existing installation, then run `node tests/browser.cjs`. Set `BROWSER_PATH` to an installed Chromium/Edge executable if needed. The suite starts an isolated local server, uses real local files, verifies uploaded JavaScript works, verifies sandbox isolation, and checks desktop/mobile layouts. Evidence is saved under ignored `.local/qa/`. Local tests do not verify your live Neon credentials, networking, or billing configuration.
