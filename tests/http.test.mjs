@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
+import handler from '../api/publisher.js';
+import viewer from '../api/view.js';
+import { storageReady } from '../lib/storage.mjs';
+
+test('real local upload, public view, persistence, duplicate protection and authenticated update', async () => {
+  process.env.ADMIN_PASSWORD = 'testing-password-not-real';
+  process.env.SESSION_SECRET = 'test-session-secret-that-is-at-least-32-characters';
+  process.env.LOCAL_STORAGE_DIR = `.local/tests/${randomUUID()}`;
+  const server = createServer((req, res) => req.url.startsWith('/view/') || req.url.startsWith('/api/view') ? viewer(req, res) : handler(req, res));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  const request = (action, options = {}) => fetch(`${origin}/api/publisher?action=${action}`, options);
+  const upload = { name: 'asset-inventory', filename: 'demo.html', html: '<!doctype html><h1>Original mockup</h1>' };
+  let cookie;
+  const post = (action, body) => request(action, { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(body) });
+  try {
+    assert.deepEqual(await (await request('session')).json(), { authenticated: false });
+    assert.equal((await request('list')).status, 401);
+    assert.equal((await post('publish', upload)).status, 401);
+    assert.equal((await request('login', { method: 'POST', headers: { Origin: 'null', 'Content-Type': 'application/json' }, body: '{}' })).status, 403);
+    const login = await post('login', { password: process.env.ADMIN_PASSWORD });
+    assert.equal(login.status, 200);
+    assert.match(login.headers.get('set-cookie'), /HttpOnly/);
+    cookie = login.headers.get('set-cookie').split(';')[0];
+    assert.equal((await post('publish', null)).status, 400);
+    const saved = await post('publish', upload);
+    assert.equal(saved.status, 201);
+    const result = await saved.json();
+    assert.equal(result.path, '/view/asset-inventory-test-mockup');
+    const publicView = await fetch(origin + result.path);
+    assert.equal(publicView.status, 200);
+    assert.equal(await publicView.text(), upload.html);
+    assert.match(publicView.headers.get('content-type'), /text\/html/);
+    assert.match(publicView.headers.get('content-security-policy'), /sandbox allow-scripts/);
+    assert.doesNotMatch(publicView.headers.get('content-security-policy'), /allow-same-origin/);
+    assert.equal((await post('publish', upload)).status, 409);
+    assert.equal((await post('publish', { ...upload, replace: true, html: '<h1>Updated</h1>' })).status, 201);
+    assert.equal(await (await fetch(origin + result.path)).text(), '<h1>Updated</h1>');
+    const library = await (await request('list', { headers: { Cookie: cookie } })).json();
+    assert.equal(library.items.length, 1);
+    assert.equal(library.items[0].path, result.path);
+    assert.equal((await fetch(origin + '/view/missing-test-mockup')).status, 404);
+    assert.equal((await fetch(origin + '/api/view?slug=..%2Fsecret')).status, 400);
+    const logout = await post('logout', {});
+    assert.match(logout.headers.get('set-cookie'), /Max-Age=0/);
+    cookie = null;
+    assert.equal((await fetch(origin + result.path)).status, 200);
+    assert.equal((await request('list')).status, 401);
+    process.env.VERCEL = '1';
+    assert.equal(storageReady(), false, 'Production must never use ephemeral local disk');
+    delete process.env.VERCEL;
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});

@@ -1,0 +1,5 @@
+.env*
+tests
+tools
+README.md
+.local

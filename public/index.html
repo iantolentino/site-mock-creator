@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mockup Studio — upload, publish, share</title>
+  <meta name="description" content="Your personal HTML mockup publishing studio.">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/"><span class="brand-mark">m<span>↗</span></span>mockup<span class="brand-light">studio</span></a><div class="header-right"><span class="personal"><span></span> Personal workspace</span><button id="logout" class="quiet" hidden>Sign out ↗</button></div></header>
+  <main>
+    <section class="intro"><div class="eyebrow">A LITTLE SPACE FOR YOUR NEXT IDEA</div><h1>From a file.<br>To a <em>live link.</em></h1><p>Give your HTML a home. Name it, upload it,<br class="desktop"> and share your next mockup with the world.</p><div class="intro-note"><span>↗</span> Your ideas, one link away.</div></section>
+    <section id="login-panel" class="panel login-panel" aria-labelledby="login-title"><div class="panel-top"><span class="step">YOUR WORKSPACE</span><span class="tiny-tag">PRIVATE</span></div><h2 id="login-title">Welcome to your studio.</h2><p class="muted">Sign in to publish and manage your mockups.</p><form id="login-form"><label for="password">Workspace password</label><input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password"><button class="primary" type="submit">Open workspace <span>↗</span></button></form><p class="footnote">The dashboard is private. Published mockup links are public.</p></section>
+    <section id="publisher-panel" class="panel" hidden aria-labelledby="publish-title"><div class="panel-top"><span class="step">01 / CREATE SOMETHING SHAREABLE</span><span class="tiny-tag">HTML → WEB</span></div><h2 id="publish-title">Publish a mockup</h2><p class="muted">A small file. A proper place on the internet.</p>
+      <form id="publish-form"><label for="name">Give it a name</label><input id="name" maxlength="92" placeholder="asset-inventory" autocomplete="off" spellcheck="false" required><div class="url-preview"><span class="link-icon">↗</span><span id="url-preview">/view/your-name-test-mockup</span></div><p class="field-note">Letters, numbers and hyphens. We add <strong>-test-mockup</strong> for you.</p>
+      <label class="file-label" for="file">Your HTML file</label><div class="dropzone" id="dropzone"><input type="file" id="file" accept=".html,.htm,text/html" aria-label="Choose HTML file"><span class="upload-icon" aria-hidden="true">↑</span><strong id="file-name">Drop your HTML here</strong><span id="file-detail">or click to browse · .html / .htm · up to 2 MB</span></div><p class="field-note">Include CSS and JavaScript in the file. Images must be embedded or use public URLs.</p>
+      <label class="checkbox"><input type="checkbox" id="replace"> <span>Update an existing mockup at the same link</span></label><button type="submit" class="primary" id="publish-button">Publish mockup <span>↗</span></button><p class="footnote">No expiry set by this app. Availability depends on your Vercel account and limits.</p></form>
+      <div id="publish-result" class="result" hidden aria-live="polite"><span id="result-state" class="step"></span><p id="result-text"></p><div class="result-actions"><a id="result-link" target="_blank" rel="noopener noreferrer" hidden>Open mockup ↗</a><button id="copy-link" class="quiet" hidden>Copy link</button></div></div>
+    </section>
+    <div id="message" role="status" aria-live="polite" hidden></div>
+    <section class="library" id="library" hidden><div class="library-heading"><div><span class="step">YOUR COLLECTION</span><h2>Made here. Shared anywhere.</h2></div><button id="refresh" class="secondary">Refresh ↻</button></div><p class="muted small">Your saved HTML mockups. Updating a mockup keeps its link.</p><div id="mockup-list"></div><button id="load-more" class="secondary" hidden>Load more mockups</button></section>
+    <section class="how-it-works"><div><span>01</span><strong>Make it yours</strong><p>Choose a name with room for your idea.</p></div><div><span>02</span><strong>Drop it in</strong><p>One self-contained HTML file is all it takes.</p></div><div><span>03</span><strong>Send it out</strong><p>A live link, ready to open and share.</p></div></section>
+  </main><footer><span>mockup studio</span><span>SMALL IDEAS DESERVE GOOD HOMES.</span><span>Powered by Vercel ↗</span></footer>
+</body></html>
