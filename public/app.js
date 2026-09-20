@@ -1,4 +1,15 @@
 const $ = id => document.getElementById(id);
+// Presentation-only helper; reuse the local SVG sprite without a runtime dependency.
+function createIcon(symbol) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', symbol);
+  svg.append(use);
+  return svg;
+}
 let selectedFile = null;
 let busy = false;
 let nextPage = null;
@@ -40,7 +51,7 @@ function renderList() {
   if (!items.size) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Your collection starts with one upload. Publish your first mockup above.'; target.append(empty); }
   for (const item of items.values()) {
     const row = document.createElement('article'); row.className = 'mockup-row';
-    const icon = document.createElement('span'); icon.className = 'mockup-icon'; icon.textContent = '</>';
+    const icon = document.createElement('span'); icon.className = 'mockup-icon'; icon.append(createIcon('#icon-file-code'));
     const info = document.createElement('div'); info.className = 'mockup-info';
     const title = document.createElement('strong'); title.textContent = item.name;
     const subtitle = document.createElement('p'); subtitle.textContent = `${location.host}${item.path}`;
@@ -49,7 +60,7 @@ function renderList() {
     const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = 'Test mockup';
     const edit = document.createElement('button'); edit.className = 'quiet'; edit.textContent = 'Update'; edit.disabled = busy;
     edit.onclick = () => { $('name').value = item.name.replace(/-test-mockup$/, ''); $('replace').checked = true; updateName(); $('name').focus(); $('publisher-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    const open = document.createElement('a'); open.textContent = 'Open ↗'; open.href = item.path; open.target = '_blank'; open.rel = 'noopener noreferrer';
+    const open = document.createElement('a'); open.textContent = 'Open'; open.append(createIcon('#icon-external-link')); open.href = item.path; open.target = '_blank'; open.rel = 'noopener noreferrer';
     actions.append(badge, edit, open); row.append(icon, info, actions); target.append(row);
   }
   $('load-more').hidden = !nextPage;
@@ -63,7 +74,7 @@ async function loadList(more = false) {
 function setBusy(value) {
   busy = value;
   for (const id of ['name', 'file', 'replace', 'publish-button', 'logout', 'refresh', 'load-more']) $(id).disabled = value;
-  $('publish-button').textContent = value ? 'Publishing…' : 'Publish mockup ↗';
+  $('publish-label').textContent = value ? 'Publishing…' : 'Publish mockup';
   renderList();
 }
 function displayResult(item) {
