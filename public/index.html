@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Mockup Studio — upload, publish, share</title>
-  <meta name="description" content="Publish an HTML mockup and share a live link from your personal workspace.">
+  <meta name="description" content="Publish an HTML mockup and share the link.">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
   <script src="./app.js" defer></script>
@@ -30,59 +30,59 @@
       <span>mockup<span class="brand-light"> studio</span></span>
     </a>
     <div class="header-right">
-      <span class="personal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-lock"></use></svg> Personal workspace</span>
+      <span class="personal"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-lock"></use></svg> Private workspace</span>
       <button id="logout" class="quiet" hidden>Sign out</button>
     </div>
   </header>
   <main id="main" tabindex="-1">
     <section class="intro" aria-labelledby="intro-title">
-      <div class="eyebrow">An HTML publishing workspace</div>
-      <h1 id="intro-title">Your mockup.<br>A <em>live link.</em></h1>
-      <p>Upload an HTML file, give it a name, and share it for review. Keep the same link when your work changes.</p>
-      <div class="intro-note">One HTML file. Up to 2 MB.</div>
+      <div class="eyebrow">HTML → link</div>
+      <h1 id="intro-title">Publish a mockup.<br><em>Share the link.</em></h1>
+      <p>Upload one HTML file, name it, and share it for review.</p>
+      <div class="intro-note">One file · 2 MB max</div>
     </section>
     <section id="login-panel" class="panel login-panel" aria-labelledby="login-title">
-      <div class="panel-top"><span class="step">Workspace access</span><span class="tiny-tag"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-lock"></use></svg> Private</span></div>
-      <h2 id="login-title">Welcome to your studio.</h2>
-      <p class="muted">Sign in to publish and manage your mockups.</p>
+      <div class="panel-top"><span class="step">Sign in</span><span class="tiny-tag"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-lock"></use></svg> Private</span></div>
+      <h2 id="login-title">Your workspace</h2>
+      <p class="muted">Publish and manage mockups.</p>
       <form id="login-form" class="field-group">
         <div class="field">
-          <label for="password">Workspace password</label>
-          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password" aria-describedby="login-note">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Workspace password" aria-describedby="login-note">
         </div>
         <button class="primary" type="submit">Open workspace <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-arrow-right"></use></svg></button>
       </form>
-      <p id="login-note" class="footnote">The dashboard is private. Published mockup links are public.</p>
+      <p id="login-note" class="footnote">Published links are public.</p>
     </section>
     <section id="publisher-panel" class="panel" hidden aria-labelledby="publish-title">
-      <div class="panel-top"><span class="step">New publication</span><span class="tiny-tag">HTML</span></div>
-      <h2 id="publish-title">Publish a mockup</h2>
-      <p class="muted">Choose your file and its place on the web.</p>
+      <div class="panel-top"><span class="step">Create</span><span class="tiny-tag">HTML</span></div>
+      <h2 id="publish-title">New mockup</h2>
+      <p class="muted">Choose a name and file.</p>
       <form id="publish-form" class="field-group">
         <div class="field">
-          <label for="name">Give it a name</label>
+          <label for="name">Name</label>
           <input id="name" maxlength="92" placeholder="asset-inventory" autocomplete="off" spellcheck="false" required aria-describedby="name-note url-preview">
           <div class="url-preview"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-link"></use></svg><span id="url-preview">/view/your-name-test-mockup</span></div>
-          <p id="name-note" class="field-note">Letters, numbers and hyphens. We add <strong>-test-mockup</strong> for you.</p>
+          <p id="name-note" class="field-note">Letters, numbers, hyphens.</p>
         </div>
         <div class="field">
-          <label class="file-label" for="file">Your HTML file</label>
+          <label class="file-label" for="file">HTML file</label>
           <div class="dropzone" id="dropzone">
             <input type="file" id="file" accept=".html,.htm,text/html" aria-label="Choose HTML file" aria-describedby="file-detail file-note">
             <span class="upload-icon" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-upload"></use></svg></span>
-            <strong id="file-name">Drop your HTML here</strong>
-            <span id="file-detail">or click to browse · .html / .htm · up to 2 MB</span>
+            <strong id="file-name">Drop HTML here</strong>
+            <span id="file-detail">or browse · .html / .htm · 2 MB max</span>
           </div>
-          <p id="file-note" class="field-note">Include CSS and JavaScript in the file. Images must be embedded or use public URLs.</p>
+          <p id="file-note" class="field-note">Self-contained HTML only.</p>
         </div>
-        <label class="checkbox"><input type="checkbox" id="replace"> <span>Update an existing mockup at the same link</span></label>
+        <label class="checkbox"><input type="checkbox" id="replace"> <span>Update this link</span></label>
         <button type="submit" class="primary" id="publish-button"><span id="publish-label">Publish mockup</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-arrow-right"></use></svg></button>
       </form>
-      <p class="footnote">No expiry set by this app. Availability depends on your hosting account and limits.</p>
+      <p class="footnote">Links stay live while hosting is active.</p>
       <div id="publish-result" class="result" hidden aria-live="polite">
         <span id="result-state" class="step"></span><p id="result-text"></p>
         <div class="result-actions">
-          <a id="result-link" target="_blank" rel="noopener noreferrer" hidden>Open mockup <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-external-link"></use></svg></a>
+          <a id="result-link" target="_blank" rel="noopener noreferrer" hidden>Open <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-external-link"></use></svg></a>
           <button id="copy-link" class="quiet" hidden>Copy link</button>
         </div>
       </div>
@@ -90,19 +90,14 @@
     <div id="message" role="status" aria-live="polite" hidden></div>
     <section class="library" id="library" hidden aria-labelledby="library-title">
       <div class="library-heading">
-        <div><span class="step">Your collection</span><h2 id="library-title">Published mockups</h2></div>
+        <div><span class="step">Collection</span><h2 id="library-title">Your mockups</h2></div>
         <button id="refresh" class="secondary"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-refresh"></use></svg> Refresh</button>
       </div>
-      <p class="muted">Your saved HTML mockups. Updating a mockup keeps its link.</p>
+      <p class="muted">Update a mockup to keep its link.</p>
       <div id="mockup-list"></div>
       <button id="load-more" class="secondary" hidden>Load more mockups</button>
     </section>
-    <section class="how-it-works" aria-label="How publishing works">
-      <div><span>01</span><strong>Name your mockup</strong><p>A short, clear name makes the link easy to recognize.</p></div>
-      <div><span>02</span><strong>Upload your HTML</strong><p>Bring one file with its styles and scripts included.</p></div>
-      <div><span>03</span><strong>Share for review</strong><p>Send the link. Publish revisions to the same address.</p></div>
-    </section>
   </main>
-  <footer><span>mockup studio</span><span>A workspace for work in progress.</span><span>Upload. Publish. Share.</span></footer>
+  <footer><span>mockup studio</span><span>Upload. Publish. Share.</span></footer>
 </body>
 </html>

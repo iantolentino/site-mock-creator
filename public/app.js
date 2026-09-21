@@ -37,18 +37,18 @@ async function api(action, body) {
 function chooseFile(file) {
   if (!file) return;
   selectedFile = null;
-  $('file-name').textContent = 'Drop your HTML here';
-  $('file-detail').textContent = 'or click to browse · .html / .htm · up to 2 MB';
+  $('file-name').textContent = 'Drop HTML here';
+  $('file-detail').textContent = 'or browse · .html / .htm · 2 MB max';
   if (!/\.html?$/i.test(file.name)) { message('Choose an .html or .htm file.'); $('file').value = ''; return; }
   if (!file.size || file.size > MAX_SIZE) { message('Choose a non-empty HTML file no larger than 2 MB.'); $('file').value = ''; return; }
   selectedFile = file;
   $('file-name').textContent = file.name;
-  $('file-detail').textContent = `${(file.size / 1024).toFixed(1)} KB · ready to publish · click to change`;
+  $('file-detail').textContent = `${(file.size / 1024).toFixed(1)} KB · ready`;
   message();
 }
 function renderList() {
   const target = $('mockup-list'); target.replaceChildren();
-  if (!items.size) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Your collection starts with one upload. Publish your first mockup above.'; target.append(empty); }
+  if (!items.size) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'No mockups yet.'; target.append(empty); }
   for (const item of items.values()) {
     const row = document.createElement('article'); row.className = 'mockup-row';
     const icon = document.createElement('span'); icon.className = 'mockup-icon'; icon.append(createIcon('#icon-file-code'));
@@ -57,11 +57,10 @@ function renderList() {
     const subtitle = document.createElement('p'); subtitle.textContent = `${location.host}${item.path}`;
     info.append(title, subtitle);
     const actions = document.createElement('div'); actions.className = 'row-actions';
-    const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = 'Test mockup';
     const edit = document.createElement('button'); edit.className = 'quiet'; edit.textContent = 'Update'; edit.disabled = busy;
     edit.onclick = () => { $('name').value = item.name.replace(/-test-mockup$/, ''); $('replace').checked = true; updateName(); $('name').focus(); $('publisher-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     const open = document.createElement('a'); open.textContent = 'Open'; open.append(createIcon('#icon-external-link')); open.href = item.path; open.target = '_blank'; open.rel = 'noopener noreferrer';
-    actions.append(badge, edit, open); row.append(icon, info, actions); target.append(row);
+    actions.append(edit, open); row.append(icon, info, actions); target.append(row);
   }
   $('load-more').hidden = !nextPage;
 }
@@ -80,7 +79,7 @@ function setBusy(value) {
 function displayResult(item) {
   $('publish-result').hidden = false;
   const url = new URL(item.path, location.origin).href;
-  $('result-state').textContent = 'SAVED & READY TO SHARE';
+  $('result-state').textContent = 'READY TO SHARE';
   $('result-text').textContent = url;
   $('result-link').hidden = false; $('copy-link').hidden = false;
   $('result-link').href = url; $('copy-link').dataset.url = url;
